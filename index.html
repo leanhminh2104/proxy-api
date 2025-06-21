@@ -2,46 +2,37 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Proxy API Viewer</title>
+  <title>Test Proxy API</title>
 </head>
 <body>
-  <h2>Kết quả Proxy</h2>
-  <pre id="result">Đang xử lý...</pre>
+  <h1>Gọi Proxy API</h1>
+  <p id="loading">Đang gọi proxy...</p>
+  <pre id="output" style="background:#eee;padding:10px;"></pre>
 
   <script>
-    // Hàm lấy tham số url trên thanh địa chỉ
-    function getQueryParam(name) {
+    async function main() {
       const params = new URLSearchParams(window.location.search);
-      return params.get(name);
-    }
-
-    async function runProxy() {
-      const url = getQueryParam("url");
-      const resultBox = document.getElementById("result");
+      const url = params.get("url");
+      const output = document.getElementById("output");
+      const loading = document.getElementById("loading");
 
       if (!url) {
-        resultBox.textContent = "Thiếu tham số ?url=";
+        loading.textContent = "Thiếu tham số ?url=";
         return;
       }
 
       try {
-        const proxyURL = "/.netlify/functions/proxy?url=" + encodeURIComponent(url); // Gọi đến function
-        const res = await fetch(proxyURL);
-        const contentType = res.headers.get("content-type");
-
-        if (contentType.includes("application/json")) {
-          const data = await res.json();
-          resultBox.textContent = JSON.stringify(data, null, 2);
-        } else {
-          const text = await res.text();
-          resultBox.textContent = text;
-        }
-      } catch (e) {
-        resultBox.textContent = "Lỗi khi gọi proxy: " + e.message;
+        const res = await fetch(`.netlify/functions/proxy?url=${encodeURIComponent(url)}`);
+        const data = await res.json();
+        loading.textContent = "";
+        output.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        loading.textContent = "Lỗi khi gọi proxy";
+        output.textContent = err.message;
       }
     }
 
-    runProxy();
+    main();
   </script>
 </body>
 </html>
