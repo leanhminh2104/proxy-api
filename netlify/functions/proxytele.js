@@ -1,7 +1,7 @@
 export async function handler(event, context) {
-  let target = event.queryStringParameters?.url;
+  let rawUrl = event.queryStringParameters?.url;
 
-  if (!target) {
+  if (!rawUrl) {
     return {
       statusCode: 400,
       body: JSON.stringify({ error: "Thiếu tham số ?url=" }),
@@ -12,16 +12,11 @@ export async function handler(event, context) {
     };
   }
 
-  // Nếu target không phải URL encode, thì encode lại
-  try {
-    new URL(target); // kiểm tra có hợp lệ không
-  } catch (e) {
-    // Nếu sai format URL thì thử decode và encode lại
-    target = encodeURI(target);
-  }
+  // ✅ Mã hóa toàn bộ URL Telegram đúng cách
+  const encodedUrl = encodeURI(rawUrl);
 
   try {
-    const fetchRes = await fetch(target, {
+    const fetchRes = await fetch(encodedUrl, {
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
                       "AppleWebKit/537.36 (KHTML, like Gecko) " +
