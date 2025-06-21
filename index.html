@@ -2,28 +2,46 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Test gọi API qua Proxy</title>
+  <title>Proxy API Viewer</title>
 </head>
 <body>
-  <h2>Proxy API Client</h2>
-  <input id="url" value="https://api.dichvusale.io.vn/api/tess" style="width:80%">
-  <button onclick="call()">Gửi yêu cầu</button>
-  <pre id="result">...</pre>
+  <h2>Kết quả Proxy</h2>
+  <pre id="result">Đang xử lý...</pre>
 
   <script>
-    async function call() {
-      const apiUrl = document.getElementById("url").value;
-      const proxyUrl = "/.netlify/functions/proxy?url=" + encodeURIComponent(apiUrl); // Đường dẫn đến serverless function
+    // Hàm lấy tham số url trên thanh địa chỉ
+    function getQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
 
-      document.getElementById("result").textContent = "Đang tải...";
+    async function runProxy() {
+      const url = getQueryParam("url");
+      const resultBox = document.getElementById("result");
+
+      if (!url) {
+        resultBox.textContent = "Thiếu tham số ?url=";
+        return;
+      }
+
       try {
-        const res = await fetch(proxyUrl);
-        const text = await res.text();
-        document.getElementById("result").textContent = text;
-      } catch (err) {
-        document.getElementById("result").textContent = "Lỗi: " + err.message;
+        const proxyURL = "/.netlify/functions/proxy?url=" + encodeURIComponent(url); // Gọi đến function
+        const res = await fetch(proxyURL);
+        const contentType = res.headers.get("content-type");
+
+        if (contentType.includes("application/json")) {
+          const data = await res.json();
+          resultBox.textContent = JSON.stringify(data, null, 2);
+        } else {
+          const text = await res.text();
+          resultBox.textContent = text;
+        }
+      } catch (e) {
+        resultBox.textContent = "Lỗi khi gọi proxy: " + e.message;
       }
     }
+
+    runProxy();
   </script>
 </body>
 </html>
