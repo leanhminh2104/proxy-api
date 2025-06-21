@@ -1,9 +1,11 @@
-export async function handler(event, context) {
+export async function handler(event) {
   const target = new URLSearchParams(event.queryStringParameters).get("url");
+
   if (!target) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: "Thiếu tham số ?url=" }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "error", message: "Thiếu tham số ?url=" }),
     };
   }
 
@@ -29,17 +31,26 @@ export async function handler(event, context) {
         "Upgrade-Insecure-Requests": "1"
       }
     });
+    const ip = event.headers["x-forwarded-for"] || "unknown";
+    const message = await fetchRes.text();
+    const now = new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
 
-    const data = await fetchRes.text();
     return {
-      statusCode: fetchRes.status,
-      headers: { "Content-Type": fetchRes.headers.get("content-type"), "Access-Control-Allow-Origin": "*" },
-      body: data
+      statusCode: 200,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      body: JSON.stringify({
+        status: "success",
+        method: "GET",
+        timestamp: now,
+        ip,
+        message: message.trim().length > 0 ? message : "THÔNG BÁO: gọi API thành công"
+      })
     };
   } catch {
     return {
       statusCode: 502,
-      body: JSON.stringify({ error: "Không thể truy cập URL gốc" }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "error", message: "Không thể truy cập URL gốc" })
     };
   }
 }
