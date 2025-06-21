@@ -1,6 +1,5 @@
 export default async function handler(req, res) {
   const target = req.query.url;
-
   if (!target) {
     return res.status(400).json({ error: "Thiếu tham số ?url=" });
   }
@@ -27,13 +26,10 @@ export default async function handler(req, res) {
         "Upgrade-Insecure-Requests": "1"
       }
     });
-
     const contentType = fetchRes.headers.get("content-type") || "text/plain";
     const data = await fetchRes.text();
-
     res.setHeader("Content-Type", contentType);
     res.setHeader("Access-Control-Allow-Origin", "*");
-
     return res.status(fetchRes.status).send(data);
   } catch (e) {
     return res.status(502).json({ error: "Không thể truy cập URL gốc" });
