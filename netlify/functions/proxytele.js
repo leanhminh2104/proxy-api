@@ -1,9 +1,8 @@
 export async function handler(event, context) {
-  const query = event.rawUrl.split('?')[1] || '';
-  const params = new URLSearchParams(query);
-  const rawUrl = params.get('url');
+  const fullUrl = event.rawUrl;
+  const urlMatch = fullUrl.match(/[\?&]url=(.+)/);
 
-  if (!rawUrl) {
+  if (!urlMatch || !urlMatch[1]) {
     return {
       statusCode: 400,
       body: JSON.stringify({ error: "Thiếu tham số ?url=" }),
@@ -14,11 +13,11 @@ export async function handler(event, context) {
     };
   }
 
-  // Tự mã hóa URL đầy đủ
-  const encodedUrl = encodeURI(rawUrl);
+  // ✅ Lấy toàn bộ chuỗi url=... (dù có &text= gì phía sau)
+  const fullTargetUrl = decodeURIComponent(urlMatch[1]);
 
   try {
-    const fetchRes = await fetch(encodedUrl, {
+    const fetchRes = await fetch(fullTargetUrl, {
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
                       "AppleWebKit/537.36 (KHTML, like Gecko) " +
