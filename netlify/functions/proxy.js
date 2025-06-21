@@ -1,7 +1,15 @@
-export default async function handler(req, res) {
-  const target = req.query.url;
+export async function handler(event, context) {
+  const target = event.queryStringParameters?.url;
+
   if (!target) {
-    return res.status(400).json({ error: "Thiếu tham số ?url=" });
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Thiếu tham số ?url=" }),
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
+    };
   }
 
   try {
@@ -30,12 +38,23 @@ export default async function handler(req, res) {
     const contentType = fetchRes.headers.get("content-type") || "text/plain";
     const data = await fetchRes.text();
 
-    res.setHeader("Content-Type", contentType);
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Cache-Control", "no-store");
-
-    return res.status(fetchRes.status).send(data);
-  } catch (e) {
-    return res.status(502).json({ error: "Không thể truy cập URL gốc" });
+    return {
+      statusCode: fetchRes.status,
+      headers: {
+        "Content-Type": contentType,
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "no-store"
+      },
+      body: data
+    };
+  } catch (err) {
+    return {
+      statusCode: 502,
+      body: JSON.stringify({ error: "Không thể truy cập URL gốc" }),
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
+    };
   }
 }
