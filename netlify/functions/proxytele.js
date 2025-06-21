@@ -1,5 +1,7 @@
 export async function handler(event, context) {
-  let rawUrl = event.queryStringParameters?.url;
+  const query = event.rawUrl.split('?')[1] || '';
+  const params = new URLSearchParams(query);
+  const rawUrl = params.get('url');
 
   if (!rawUrl) {
     return {
@@ -12,7 +14,7 @@ export async function handler(event, context) {
     };
   }
 
-  // ✅ Mã hóa toàn bộ URL Telegram đúng cách
+  // Tự mã hóa URL đầy đủ
   const encodedUrl = encodeURI(rawUrl);
 
   try {
