@@ -1,60 +1,56 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <title>Get video, music tiktok from link</title>
-    <style>/* ... giữ nguyên CSS cũ của bạn ... */</style>
+  <meta charset="UTF-8">
+
 </head>
 <body>
-<div class="container">
-    <h2>Get video, music tiktok from link</h2>
-    <h3>Code by LeAnhMinh - LAMDev</h3>
-    <form method="POST">
-        <input type="text" name="link"
-               placeholder="Dán link TikTok tại đây, rồi ấn Get Link"
-               required onkeydown="if(event.key==='Enter') this.form.submit();">
-        <br>
-        <button type="submit">Get link</button>
-    </form>
+  <script>
+    export async function handler(event, context) {
+  const target = new URLSearchParams(event.queryStringParameters).get("url");
+  if (!target) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Thiếu tham số ?url=" }),
+    };
+  }
 
-    <?php if ($error): ?>
-        <p class="error"><?= $error ?></p>
-    <?php endif; ?>
+  try {
+    const fetchRes = await fetch(target, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                      "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                      "Chrome/137.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept-Language": "vi,en-US;q=0.9,en;q=0.8",
+        "Referer": "https://www.google.com/",
+        "Origin": "https://www.google.com",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+        "Sec-CH-UA": '"Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"',
+        "Sec-CH-UA-Mobile": "?0",
+        "Sec-CH-UA-Platform": '"Windows"',
+        "Sec-CH-Prefers-Color-Scheme": "dark",
+        "Upgrade-Insecure-Requests": "1"
+      }
+    });
 
-    <?php if ($video_url): ?>
-        <div class="title">Tiêu đề video: <?= htmlspecialchars($title) ?></div>
-        <h3>🎥 Video no logo</h3>
-        <video controls><source src="<?= $video_url ?>" type="video/mp4"></video>
-        <div class="link-box">
-            <div class="link-text" id="video_link"><?= $video_url ?></div>
-        </div>
-        <div class="btn-group">
-            <button class="copy-btn" onclick="copyToClipboard('video_link')">Sao chép link video</button>
-            <button class="download-btn" onclick="downloadFile('<?= $video_url ?>','video.mp4')">Tải về</button>
-        </div>
-
-        <h3>🎵 Music</h3>
-        <audio controls><source src="<?= $music_url ?>" type="audio/mpeg"></audio>
-        <div class="link-box">
-            <div class="link-text" id="music_link"><?= $music_url ?></div>
-        </div>
-        <div class="btn-group">
-            <button class="copy-btn" onclick="copyToClipboard('music_link')">Sao chép link music</button>
-            <button class="download-btn" onclick="downloadFile('<?= $music_url ?>','music.mp3')">Tải về</button>
-        </div>
-
-        <div class="info">
-            <p><strong>ID video:</strong> <?= $video_id ?></p>
-            <p><strong>Quốc gia:</strong> <?= $region ?></p>
-            <p><strong>View:</strong> <?= $view ?></p>
-            <p><strong>Tim:</strong> <?= $tim ?></p>
-            <p><strong>Comment:</strong> <?= $comment ?></p>
-            <p><strong>Share:</strong> <?= $share ?></p>
-            <p><strong>Kích Thước video:</strong> <?= $size ?></p>
-            <p><strong>Download:</strong> <?= $download ?></p>
-            <p><strong>Yêu thích:</strong> <?= $yeu_thich ?></p>
-            <p><strong>Thời gian đăng bài:</strong> <?= $time_up ?></p>
-            <p><strong>Thời gian xử lý get link:</strong> <?= $processed_time ?> giây</p>
-        </div>
-    <?php endif; ?>
-</div>
+    const data = await fetchRes.text();
+    return {
+      statusCode: fetchRes.status,
+      headers: { "Content-Type": fetchRes.headers.get("content-type"), "Access-Control-Allow-Origin": "*" },
+      body: data
+    };
+  } catch {
+    return {
+      statusCode: 502,
+      body: JSON.stringify({ error: "Không thể truy cập URL gốc" }),
+    };
+  }
+}
+  </script>
+</body>
+</html>
